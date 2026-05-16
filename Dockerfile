@@ -11,12 +11,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# 3. Changed ghcr.io image pull to the official static installation script (bypasses GHCR proxy hang)
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
-    && curl -LsSf https://astral.sh | sh \
-    && mv /root/.local/bin/uv /usr/local/bin/uv \
-    && apt-get purge -y --auto-remove curl \
-    && rm -rf /var/lib/apt/lists/*
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 
 # Create non-privileged user
 ARG UID=10001
