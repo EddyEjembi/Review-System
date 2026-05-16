@@ -1,0 +1,17 @@
+[project]
+name = "review-system"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "faiss-cpu>=1.13.2",
+    "fastapi>=0.136.1",
+    "openai>=2.36.0",
+    "pandas>=3.0.3",
+    "pyarrow>=24.0.0",
+    "python-dotenv>=1.2.2",
+    "ruff>=0.15.12",
+    "sentence-transformers>=5.5.0",
+    "uvicorn[standard]>=0.46.0",
+]
