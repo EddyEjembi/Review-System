@@ -19,7 +19,7 @@ Persona-driven **synthetic Yelp-style reviews**: pick a demo user (or define a n
 ## Clone and run locally
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/EddyEjembi/Review-System.git
 cd Review-System
 
 docker compose up --build
@@ -51,13 +51,13 @@ Authorization: Bearer <your_openai_api_key>
 
 ### cURL example
 
-Replace `YOUR_KEY`, `USER_ID`, and `BUSINESS_ID`:
+Replace `YOUR_AI_KEY`, `USER_ID`, and `BUSINESS_ID`:
 
 ```bash
 curl -X 'POST' \
   'http://localhost:9000/reviews' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer YOUR_KEY' \
+  -H 'Authorization: Bearer YOUR_AI_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
   "business_id": "BUSINESS_ID",
