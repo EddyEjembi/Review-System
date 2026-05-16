@@ -11,7 +11,23 @@ dependencies = [
     "pandas>=3.0.3",
     "pyarrow>=24.0.0",
     "python-dotenv>=1.2.2",
-    "ruff>=0.15.12",
     "sentence-transformers>=5.5.0",
+    "torch",
     "uvicorn[standard]>=0.46.0",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.12",
+]
+
+# CPU-only PyTorch for Linux Docker (Railway). Avoids CUDA/nvidia wheels from PyPI.
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
