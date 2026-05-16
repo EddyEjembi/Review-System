@@ -1,12 +1,7 @@
-# syntax=docker/dockerfile:1
+# 1. Removed syntax=docker/dockerfile:1 to stop the initial 4-hour hang
 
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
-# https://docs.docker.com/go/dockerfile-reference/
-
-# Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
-ARG PYTHON_IMAGE_TAG=3.12-slim-bookworm
-FROM python:${PYTHON_IMAGE_TAG}
+# 2. Pinned directly to an immutable SHA digest to stop Docker Hub tag-resolution hangs
+FROM python:3.12-slim-bookworm@sha256:0652da0f56bc7404423871790e729a98ef1f074d2fc1ba873bf79624597034bf
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -16,10 +11,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+# 3. Changed ghcr.io image pull to the official static installation script (bypasses GHCR proxy hang)
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -LsSf https://astral.sh | sh \
+    && mv /root/.local/bin/uv /usr/local/bin/uv \
+    && apt-get purge -y --auto-remove curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create a non-privileged user that the app will run under.
-# See https://docs.docker.com/go/dockerfile-user-best-practices/
+# Create non-privileged user
 ARG UID=10001
 RUN adduser \
     --disabled-password \
@@ -30,19 +29,16 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-# Layer cache: lockfile + deps only (no packaging of this repo as a wheel).
-# Plain `uv sync` (no BuildKit cache mount): works on Docker Desktop and Railway.
-# Railway requires id=s/<service-id>-<path> on cache mounts; that is not portable in git.
+# Layer cache setup
 COPY pyproject.toml uv.lock ./
 
 RUN uv sync --frozen --no-dev --no-install-project
 
 COPY . .
 
-# Writable cache for Hugging Face Hub (SentenceTransformer): appuser has HOME=/nonexistent by default.
+# Writable cache for Hugging Face Hub
 RUN mkdir -p /app/.cache/huggingface && chown -R appuser:appuser /app
 
-# Switch to the non-privileged user to run the application.
 USER appuser
 
 ENV PATH="/app/.venv/bin:$PATH" \
@@ -50,7 +46,6 @@ ENV PATH="/app/.venv/bin:$PATH" \
     HF_HOME=/app/.cache/huggingface \
     XDG_CACHE_HOME=/app/.cache
 
-# Expose the port that the application listens on.
 EXPOSE 9000
 
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-9000}"]
