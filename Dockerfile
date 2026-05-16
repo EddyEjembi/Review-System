@@ -1,7 +1,7 @@
 # 1. Removed syntax=docker/dockerfile:1 to stop the initial 4-hour hang
 
 # 2. Pinned directly to an immutable SHA digest to stop Docker Hub tag-resolution hangs
-FROM python:3.12-slim-bookworm@sha256:0652da0f56bc7404423871790e729a98ef1f074d2fc1ba873bf79624597034bf
+FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
