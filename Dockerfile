@@ -30,15 +30,12 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
 # Layer cache: lockfile + deps only (no packaging of this repo as a wheel).
+# Plain `uv sync` (no BuildKit cache mount): works on Docker Desktop and Railway.
+# Railway requires id=s/<service-id>-<path> on cache mounts; that is not portable in git.
 COPY pyproject.toml uv.lock ./
 
-RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-dev --no-install-project
 
 COPY . .
 
@@ -56,4 +53,4 @@ ENV PATH="/app/.venv/bin:$PATH" \
 # Expose the port that the application listens on.
 EXPOSE 9000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9000"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-9000}"]
